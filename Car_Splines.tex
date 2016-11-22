@@ -1,0 +1,135 @@
+% MA 348 Project 1 submission
+% Author: Julian Pryde (prydej@my.erau.edu)
+
+\documentclass[12pt, letterpaper]{article} %Set document class
+
+\usepackage{lmodern,amsmath,amssymb} % math equation things
+\usepackage{graphicx}	% Displaying pictures
+% \graphicspath{{src/gnuplot/}} % Set location of pictures relative to this file
+
+% ==============
+% Courtesy of http://tex.stackexchange.com/a/34087
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{lmodern}
+\usepackage{listings}	% Syntax highlighting
+
+% ==============
+% Courtesy of http://tex.stackexchange.com/questions/75116
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\lstnewenvironment{Matlab}{
+	\lstset{language=Matlab,%
+    		%basicstyle=\color{red},
+	    breaklines=true,%
+	    morekeywords={matlab2tikz},
+	    keywordstyle=\color{blue},%
+	    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+	    identifierstyle=\color{black},%
+	    stringstyle=\color{mylilas},
+	    commentstyle=\color{mygreen},%
+	    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+	    numbers=left,%
+	    numberstyle={\tiny \color{black}},% size of the numbers
+	    numbersep=9pt, % this defines how far the numbers are from the text
+	    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+	    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+	}}{}
+\lstnewenvironment{Fortran}{
+	\lstset{language=[90]Fortran,
+		basicstyle=\ttfamily,
+		keywordstyle=\color{red},
+		commentstyle=\color{green},
+		morecomment=[l]{!\ }
+	}}{}
+\begin{document}
+
+\title{MA 348 - Numerical Analysis \\ Project 4}
+\author{Samuel Yaney, Julian Pryde, and Sean Holden}
+\date{November 17, 2016}
+\maketitle
+
+\section*{Introduction}
+
+
+When a line can only be described by a series of points on it, it is often useful to approximate the position of the line at points between the given ones. This can be done with several different techniques, such as spline approximation, and polynomial regression. The method looked at in this project will be spline approximation, but the results obtained with spline approximation will be compared with those obtained with polynomial regression.
+
+The points used to test the spline approximation method describe the roof of the car in the graphic below. At the end of the project, we will also be comparing the line obtained with both methods of interpolation with the image of the car to test the accuracy of the approximation.
+
+\begin{center}
+	\begin{figure}
+		\includegraphics[scale=0.5]{Car.png}
+		\caption{The car whose roof is described by the given points}
+	\end{figure}
+\end{center}
+
+\section*{Theory-Analysis}
+The spline approximation works by creating a 3rd-degree polynomial between each of the given points \((x(n), y(n))\). At any given point, the polynomials on either side of it have the same position, slope, and concavity at the point where they touch. Since the position where they touch equals the position of the given point, this position can be defined exactly. With this information, the first and second derivative of the equations can be compared to find the slope and concavity of the equations at the point where they touch. A generalized third degree polynomial is defined below:
+\begin{equation}
+S_i(x) = a_1 + b(x - x_i) + c(x - x_i)^2 + d(x - x_i)^4
+\end{equation}
+From now on, \(x_{i + 1} - x_i\) will be referred to as \(h_i\) for conciseness.
+
+Because two lines' positions, slopes, and concavities are equal at a point that they have in common, the following can be inferred for any equation \(i\):
+\begin{equation}
+S_i(x_{i+1}) = S_{i+1}(x_{i+1})
+\end{equation}
+\begin{equation}
+S_i'(x_{i+1}) = S_{i+1}'(x_{i+1})
+\end{equation}
+\begin{equation}
+S_i''(x_{i+1}) = S_{i+1}''(x_{i+1})
+\end{equation}
+In addition, because adjacent polynomials have common positions at the given points, it can be assumed that
+\begin{equation}
+S_i(n) = y(n)
+\end{equation}
+Finally, because \(S_i(x)\) is equal to the \(a\) coefficient, it can also be assumed that
+\begin{equation}
+a = y
+\end{equation}
+for all given points \(y_i\).
+
+Using equations 1, 2, and 7, it can be inferred that
+\begin{equation}
+y_{i + 1} - y_i =  b_j(h_i) + c_j(h_i)^2 + d_j(h_i)^3
+\end{equation}
+and using equations 3 and 4, the following two equations can be inferred by taking the derivative and second derivative of \(S_i\):
+\begin{equation}
+b_{i + 1} = b_i + 2c_i(h_i) + 3d_i(h_i)^2 = S_i'(x_{i + 1}) = S_{i + 1}'(x_{i + 1})
+\end{equation}
+\begin{equation}
+c_{i + 1} = 2c_i + 6d_i(h_i) = S_i''(x_{i + 1}) = S_{i + 1}''(x_{i + 1})
+\end{equation}
+In this way, equations can be found for each coefficient in the original polynomial except for \(d\). This can be found by rearranging equation 9 as such:
+\begin{equation}
+d_i = \dfrac{2c_i - c_{i + 1}}{h_i}
+\end{equation}
+
+Now that multiple equations for each coefficient have been found, substitutions can be made in equation 7 to find its \(b\), \(c\), and \(d\) variables. First equation 10 can be used to substitute for \(d_i\) in equation 7, making:
+\begin{equation}
+y_{i + 1} - y_i = b_ih_i + c_ih_i^2 + \dfrac{2c_{i + 1} - 2c_i}{6h_i}h_i^3
+\end{equation}
+and by algebraic simplification,
+\begin{equation}
+y_{i + 1} - y_i = b_ih_i + c_ih_i^2 + \dfrac{2c_{i + 1} - 2c_i}{6}h_i^2
+\end{equation}
+\begin{equation}
+y_{i + 1} - y_i = b_ih_i + c_ih_i^2 + \dfrac{c_{i + 1}h_i^2}{3} - \dfrac{c_ih_i^2}{3}
+\end{equation}
+\begin{equation}
+y_{i + 1} - y_i = b_ih_i + \dfrac{2c_ih_i^2}{3} + \dfrac{c_{i + 1}h_i^2}{3}
+\end{equation}
+
+\section*{Numerical Solution}
+
+\section*{Results and Discussion}
+
+\section*{Conclusions}
+
+\section*{Appendix A: MATLAB Spline Approximation Implementation}
+
+\section*{Appendix B: FORTRAN Regression Implementation}
+
+\end{document}
