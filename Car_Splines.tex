@@ -55,7 +55,7 @@
 
 When a line can only be described by a series of points on it, it is often useful to approximate the position of the line at points between the given ones. This can be done with several different techniques, such as spline approximation, and polynomial regression. The method looked at in this project will be spline approximation, but the results obtained with spline approximation will be compared with those obtained with polynomial regression.
 
-The points used to test the spline approximation method describe the roof of the car in the graphic below. At the end of the project, we will also be comparing the line obtained with both methods of interpolation with the image of the car to test the accuracy of the approximation.
+The points used to test the spline approximation method describe the roof of the car in the graphic below. At the end of the project, the authors will also be comparing the line obtained with both methods of interpolation with the image of the car to test the accuracy of the approximation.
 
 \begin{center}
 	\begin{figure}
@@ -67,62 +67,108 @@ The points used to test the spline approximation method describe the roof of the
 \section*{Theory-Analysis}
 The spline approximation works by creating a 3rd-degree polynomial between each of the given points \((x(n), y(n))\). At any given point, the polynomials on either side of it have the same position, slope, and concavity at the point where they touch. Since the position where they touch equals the position of the given point, this position can be defined exactly. With this information, the first and second derivative of the equations can be compared to find the slope and concavity of the equations at the point where they touch. A generalized third degree polynomial is defined below:
 \begin{equation}
-S_i(x) = a_1 + b(x - x_i) + c(x - x_i)^2 + d(x - x_i)^4
+S_i(x) = a + b(x - x_i) + c(x - x_i)^2 + d(x - x_i)^4
+\label{basic_poly}
 \end{equation}
+By finding separate equations for three of the $a$, $b$, $c$, and $d$ coefficients in this equation, they can be substituted for in equation \ref{basic_poly}, its value can be found, and thus the values of all other coefficients can be found.
 From now on, \(x_{i + 1} - x_i\) will be referred to as \(h_i\) for conciseness.
 
 Because two lines' positions, slopes, and concavities are equal at a point that they have in common, the following can be inferred for any equation \(i\):
 \begin{equation}
 S_i(x_{i+1}) = S_{i+1}(x_{i+1})
+\label{0th_deriv}
 \end{equation}
 \begin{equation}
 S_i'(x_{i+1}) = S_{i+1}'(x_{i+1})
+\label{1st_deriv}
 \end{equation}
 \begin{equation}
 S_i''(x_{i+1}) = S_{i+1}''(x_{i+1})
+\label{2nd_deriv}
 \end{equation}
 In addition, because adjacent polynomials have common positions at the given points, it can be assumed that
 \begin{equation}
 S_i(n) = y(n)
+\label{si.eq.y}
 \end{equation}
 Finally, because \(S_i(x)\) is equal to the \(a\) coefficient, it can also be assumed that
 \begin{equation}
 a = y
+\label{a.eq.y}
 \end{equation}
-for all given points \(y_i\).
+for all given points \(y_i\). Now that a separate equation for the $a$ coefficient has been found, equations for the other coefficients must also be found. 
 
-Using equations 1, 2, and 7, it can be inferred that
+Using equations \ref{basic_poly}, \ref{0th_deriv}, and \ref{a.eq.y}, it can be inferred that
 \begin{equation}
 y_{i + 1} - y_i =  b_j(h_i) + c_j(h_i)^2 + d_j(h_i)^3
+\label{d_1st}
 \end{equation}
-and using equations 3 and 4, the following two equations can be inferred by taking the derivative and second derivative of \(S_i\):
+and using equations \ref{1st_deriv} and \ref{2nd_deriv}, the following two equations can be inferred by taking the derivative and second derivative of \(S_i\):
 \begin{equation}
 b_{i + 1} = b_i + 2c_i(h_i) + 3d_i(h_i)^2 = S_i'(x_{i + 1}) = S_{i + 1}'(x_{i + 1})
+\label{1st_deriv_appl}
 \end{equation}
 \begin{equation}
 c_{i + 1} = 2c_i + 6d_i(h_i) = S_i''(x_{i + 1}) = S_{i + 1}''(x_{i + 1})
-\end{equation}
-In this way, equations can be found for each coefficient in the original polynomial except for \(d\). This can be found by rearranging equation 9 as such:
-\begin{equation}
-d_i = \dfrac{2c_i - c_{i + 1}}{h_i}
+\label{2nd_deriv_appl}
 \end{equation}
 
-Now that multiple equations for each coefficient have been found, substitutions can be made in equation 7 to find its \(b\), \(c\), and \(d\) variables. First equation 10 can be used to substitute for \(d_i\) in equation 7, making:
+An equation for the $d$ variable can be found by rearranging equation \ref{1st_deriv_appl} as such:
+\begin{equation}
+d_i = \dfrac{2c_i - c_{i + 1}}{h_i}
+\label{d_2nd}
+\end{equation}
+An equation for the $b$ variable can be found in the following way.
 \begin{equation}
 y_{i + 1} - y_i = b_ih_i + c_ih_i^2 + \dfrac{2c_{i + 1} - 2c_i}{6h_i}h_i^3
+\label{b_1st}
 \end{equation}
 and by algebraic simplification,
 \begin{equation}
 y_{i + 1} - y_i = b_ih_i + c_ih_i^2 + \dfrac{2c_{i + 1} - 2c_i}{6}h_i^2
+\label{b_2nd}
 \end{equation}
 \begin{equation}
 y_{i + 1} - y_i = b_ih_i + c_ih_i^2 + \dfrac{c_{i + 1}h_i^2}{3} - \dfrac{c_ih_i^2}{3}
+\label{b_3rd}
 \end{equation}
 \begin{equation}
 y_{i + 1} - y_i = b_ih_i + \dfrac{2c_ih_i^2}{3} + \dfrac{c_{i + 1}h_i^2}{3}
+\label{b_4th}
+\end{equation}
+\begin{equation}
+h_if[x_i,x_{i+1}] = b_ih_i + \dfrac{2c_ih_i^2}{3} + c_{i+1}\dfrac{h_i^2}{3}
+\label{b_5th}
+\end{equation}
+\begin{equation}
+b_i = f[x_i,x_{i+1}] - c_ih_i - d_ih_i^2
+\label{b_6th}
 \end{equation}
 
+Another way of writing the equation for $b$ is using equation \ref{1st_deriv_appl} and replacing $i$ with $i-1$ and $i+1$ with $i$. This moves the focus from the left endpoint of the polynomial to the right endpoint.
+\begin{equation}
+b_i = b_{i-1} + 2c_{i-1}h_{i-1} + 3d_{i-1}h_{i-1}^2
+\label{2ndary_bi}
+\end{equation}
+Equation \ref{b_6th} can be substituted for the left hand side of this equation to form:
+\begin{equation}
+f[x_i,x_{i+1}] - c_ih_i - d_ih_i^2 = b_{i-1} + 2c_{i-1}h_{i-1} + 3d_{i-1}h_{i-1}^2
+\end{equation}
+If equations in terms of $c$ are substituted for $d$ coefficients in this equation, those $c$'s can be solved for to find one of the three unknown coefficients. These replacements use equation \ref{d_2nd} and \ref{b_6th}.
+\begin{multline}
+f[x_i,x_{i+1}] - c_{i-1}h_{i-1} - \dfrac{2c_i-2c_{i-1}}{6}h_i + 2c_{i-1}h_{i-1} + (c_i-c_{i-1})h_{i-1} = \\ f[x_{i-1},x] - c_ih_i - \dfrac{c_{i-1}h_i}{3}
+\label{big_ass_equation}
+\end{multline}
+Finally, this can be reorganized to be the following:
+\begin{equation}
+3(f[x_i,x_{i+1}] - f[x_{i-1},x]) =
+c_{i-1}h_{i-1} + 2c_i[h_{i-1}+h_i] + c_{i+1}h_i
+\label{big_ass_equation_2}
+\end{equation}
 
+Because this equation references the given points on either side of the one being evaluated, the equation can only be evaluated for points $1$ to $n-1$. For this project, the value of $S''_0(x_0)$ was assumed to be $0$, meaning that $c_0$ was $0$ and the value of $S''_{n-1}(x_n)$ was assumed to be $0$, meaning that $c_n$ was $0$. When evaluating for equation \ref{big_ass_equation_2} at $i = 1$ and $i = n-1$, the first and last terms on the right hand side of the equation were zero, as the $c$ coefficient at those points was assumed to be zero.
+
+To find all $n-2 c$-values, equation \ref{big_ass_equation_2} was evaluated in a matrix equation of the form $Ax = B$ with the row $1$ of the $A$ matrix containing the equation evaluated at $i = 1$, row $2$ containing the equation evaluated at $i = 2$ and so on until row $n-1$. The first column of the matrix contains the coefficient to the $c_1$ variable in equation \ref{big_ass_equation_2}, the second column contains the coefficient to the $c_2$ variable in the equation and so on until row $n-1$.
 
 \section*{Numerical Solution}
 Using MATLAB R2015b, the given coordinates were hardcoded as separate $x$ and $y$ vectors. Along with this a matrix of dimensions 11x11 was created and filled with zeros. This matrix was only a 11x11 because of the initial conditions given when forming a natural spline ($c_0$ and $c_n$ are equal to 0) which leaves only 11 values that need to be calculated. This matrix was filled on the diagonal using the equations for $h$. This matrix was then converted into an augmented matrix and using Gaussian Elimination without pivoting the values for $c_1$ to $c_{n-1}$ were calculated. Using these values, the coefficients $b$ and $d$ were calculated (the values of $a$ did not have to be calculated as they are synonymous with the vector of $y$ values). To solve for each of these sets, MATLAB's for-end loops were used to fill vectors with the data. 
