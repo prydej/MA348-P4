@@ -50,8 +50,7 @@
 \date{November 17, 2016}
 \maketitle
 
-\section*{Introduction}
-
+\section{Introduction}
 
 When a line can only be described by a series of points on it, it is often useful to approximate the position of the line at points between the given ones. This can be done with several different techniques, such as spline approximation, and polynomial regression. The method looked at in this project will be spline approximation, but the results obtained with spline approximation will be compared with those obtained with polynomial regression.
 
@@ -64,13 +63,32 @@ The points used to test the spline approximation method describe the roof of the
 	\end{figure}
 \end{center}
 
-\section*{Theory-Analysis}
-Divided difference is an algorithm that can be used to calculate the coefficients of interpolation polynomials.  Suppose we have $n+1$ data points of the form $(x_0, f(x_0)) ... (x_n, f(x_n))$, then there are $n+1$ zeroth divided differences of the form $f[x_i]=f(x_i)$, $n$ first divided differences of the following form:
-\[f[x_i, x_{i+1}]=\dfrac{f[x_{i+1}] - f[x_i]}{x_{i+1} - x_i}\]
+\section{Theory-Analysis}
+
+\subsection{Divided Difference}
+Divided difference is an algorithm that can be used to calculate the coefficients of interpolation polynomials. The basic form of the polynomial is as follows:
+\begin{equation}
+f(x) = a_1 + a_2(x - x_0) + a_3(x - x_0)(x - x_1) + ... + a_n(x - x_0)(x - x_1)...(x - x_n)
+\label{dd_basic_poly}
+\end{equation}
+Suppose there exist $n+1$ data points of the form $(x_0, f(x_0)) ... (x_n, f(x_n))$, then there are $n+1$ zeroth divided differences of the form 
+\begin{equation}
+f[x_i]=f(x_i),
+\end{equation}
+$n$ first divided differences of the following form:
+\begin{equation}
+f[x_i, x_{i+1}]=\dfrac{f[x_{i+1}] - f[x_i]}{x_{i+1} - x_i},
+\label{dd_2nd}
+\end{equation}
 and so on until there is a single $n^{th}$-divided difference of the following form:
-\[f[x_0, x_1, ...x _n]=\dfrac{f[x_1, x_2, ... x_n] - f[x_0, ... x_{n-1}]}{x_n - x_0}\]
+\begin{equation}
+f[x_0, x_1, ...x _n]=\dfrac{f[x_1, x_2, ... x_n] - f[x_0, ... x_{n-1}]}{x_n - x_0}
+\label{dd_3rd}
+\end{equation}
 
+Each zeroth divided difference is substituted for its corresponding $a$ coefficient in equation \ref{dd_basic_poly} with the 1st zeroth divided difference being substituted for the $a_1$ coefficient, the 2nd zeroth difference being substituted for the $a_2$ coefficient and so on.
 
+\subsection{Spline Approximation}
 The spline approximation works by creating a 3rd-degree polynomial between each of the given points \((x(n), y(n))\). At any given point, the polynomials on either side of it have the same position, slope, and concavity at the point where they touch. Since the position where they touch equals the position of the given point, this position can be defined exactly. With this information, the first and second derivative of the equations can be compared to find the slope and concavity of the equations at the point where they touch. A generalized third degree polynomial is defined below:
 \begin{equation}
 S_i(x) = a + b(x - x_i) + c(x - x_i)^2 + d(x - x_i)^4
@@ -176,17 +194,19 @@ Because this equation references the given points on either side of the one bein
 
 To find all $n-2 c$-values, equation \ref{big_ass_equation_2} was evaluated in a matrix equation of the form $Ax = B$ with the row $1$ of the $A$ matrix containing the equation evaluated at $i = 1$, row $2$ containing the equation evaluated at $i = 2$ and so on until row $n-1$. The first column of the matrix contains the coefficient to the $c_1$ variable in equation \ref{big_ass_equation_2}, the second column contains the coefficient to the $c_2$ variable in the equation and so on until row $n-1$.
 
-\section*{Numerical Solution}
+\section{Numerical Solution}
+\subsection{Divided Difference}
+\subsection{Spline Approximation}
 Using MATLAB R2015b, the given coordinates were hardcoded as separate $x$ and $y$ vectors. Along with this a matrix of dimensions 11x11 was created and filled with zeros. This matrix was only a 11x11 because of the initial conditions given when forming a natural spline ($c_0$ and $c_n$ are equal to 0) which leaves only 11 values that need to be calculated. This matrix was filled on the diagonal using the equations for $h$. This matrix was then converted into an augmented matrix and using Gaussian Elimination without pivoting the values for $c_1$ to $c_{n-1}$ were calculated. Using these values, the coefficients $b$ and $d$ were calculated (the values of $a$ did not have to be calculated as they are synonymous with the vector of $y$ values). To solve for each of these sets, MATLAB's for-end loops were used to fill vectors with the data. 
 
 Once all of the coefficients had been solved for, a final for loop was used in conjunction with the 'hold on' command to ensure that each portion of the piecewise function could be plotted simultaneously. Since there was not a complete function available to be plotted, a set of coordinates had to be used. For each section ($S_i$) that was plotted, approximately 100 coordinate pairs were used to plot the spline. Ideally the function itself would have been used to create the plot but due to the density of the coordinates, and error that this may have induced is negligible. 
 
-\section*{Results and Discussion}
+\section{Results and Discussion}
 
-\section*{Conclusions}
+\section{Conclusions}
 
-\section*{Appendix A: MATLAB Spline Approximation Implementation}
+\section{Appendix A: MATLAB Spline Approximation Implementation}
 
-\section*{Appendix B: FORTRAN Regression Implementation}
+\section{Appendix B: FORTRAN Regression Implementation}
 
 \end{document}
