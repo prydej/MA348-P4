@@ -5,6 +5,7 @@
 
 \usepackage{lmodern,amsmath,amssymb} % math equation things
 \usepackage{graphicx}	% Displaying pictures
+\usepackage{float}
 % \graphicspath{{src/gnuplot/}} % Set location of pictures relative to this file
 
 % ==============
@@ -52,7 +53,7 @@
 
 \section{Introduction}
 
-When a line can only be described by a series of points on it, it is often useful to approximate the position of the line at points between the given ones. This can be done with several different techniques, such as spline approximation, and polynomial regression. The method looked at in this project will be spline approximation, but the results obtained with spline approximation will be compared with those obtained with polynomial regression.
+When a line can only be described by a series of points on it, it is often useful to approximate the position of the line at points between the given ones. This can be done with several different techniques, such as spline approximation, and polynomial regression. The method looked at in this project will be spline approximation. The results of the team's MATLAB implementation of the spline approximation will be compared to MATLAB's own implementation of the spline approximation.
 
 The points used to test the spline approximation method describe the roof of the car in the graphic below. At the end of the project, the authors will also be comparing the line obtained with both methods of interpolation with the image of the car to test the accuracy of the approximation.
 
@@ -61,6 +62,32 @@ The points used to test the spline approximation method describe the roof of the
 		\includegraphics[scale=0.5]{Car.png}
 		\caption{The car whose roof is described by the given points}
 	\end{figure}
+\end{center}
+
+The points that describe the car's roof are in the following table.
+
+\begin{center}
+	\begin{tabular}{|c|c|}
+	\hline
+	\multicolumn{2}{|c|}{Car roof points}\\ \hline
+	\textbf{X}&\textbf{Y}\\
+		1.25&1.15\\
+		1.60&1.48\\
+		2.21&1.71\\
+		2.78&1.83\\
+		3.60&2.17\\
+		4.26&2.47\\
+		4.82&2.64\\
+		5.50&2.74\\
+		6.21&2.76\\
+		6.88&2.74\\
+		7.58&2.60\\
+		8.31&2.30\\
+		8.93&2.10\\
+	\hline
+	\end{tabular}
+	
+	\bigskip
 \end{center}
 
 \section{Theory-Analysis}
@@ -202,11 +229,106 @@ Using MATLAB R2015b, the given coordinates were hardcoded as separate $x$ and $y
 Once all of the coefficients had been solved for, a final for loop was used in conjunction with the 'hold on' command to ensure that each portion of the piecewise function could be plotted simultaneously. Since there was not a complete function available to be plotted, a set of coordinates had to be used. For each section ($S_i$) that was plotted, approximately 100 coordinate pairs were used to plot the spline. Ideally the function itself would have been used to create the plot but due to the density of the coordinates, and error that this may have induced is negligible. 
 
 \section{Results and Discussion}
+The MATLAB implementation of the Spline Approximation created by the team proved to very closely approximate the roof of the car in the picture. Two graphics are shown below, of the result of MATLAB's own implementation of the spline approximation of the car, as well as the same image with the result of the team's implementation of the spline approximation overlayed.
+
+\begin{center}
+	\begin{figure}[H]
+		\includegraphics[scale=0.5]{car_with_matlab_spline.png}
+		\caption{An image of the car with the result of MATLAB's implementation of the spline approximation 			overlayed}
+	\end{figure}
+\end{center}
+
+\begin{center}
+	\begin{figure}[H]
+		\includegraphics[scale=0.5]{car_with_both_splines.png}
+		\caption{An image of the car with the result of the team's implementation of the spline approximation 		overlayed. The team's implementation is in red.}
+	\end{figure}
+\end{center}
+
+The only difference between the team's implementation of the spline approximation was between points 12 and 13, where MATLAB used a different set of end point conditions to create its spline than were used by the team.
 
 \section{Conclusions}
+A spline approximation is an efficient way of interpolating a line between a given set of points that meets each point. In this project, it has been proven algebraically, and reinforced numerically that a spline approximation can be used to estimate the y-value of any x-value along a line described by a series of points.
 
 \section{Appendix A: MATLAB Spline Approximation Implementation}
+\begin{lstlisting}[language=matlab]
 
-\section{Appendix B: FORTRAN Regression Implementation}
+%build matrix to find c
+for i=1:11
+   h1=(x(i+1)-x(i));
+   h2=(x(i+2)-x(i+1));
+   
+   matrix(i,i)=(2*(h1+h2));
+   if i<11
+   matrix(i,i+1)=h2;
+   end
+   if i>1
+   matrix(i,i-1)=h1;
+   end
+end
+
+%build vector on right side
+for j=1:11
+    f1=(y(j+1)-y(j))/(x(j+1)-x(j));
+    f2=(y(j+2)-y(j+1))/(x(j+2)-x(j+1));
+    
+    c(j) = f2-f1;
+end 
+
+matrix(:,12)=c;
+%use gaussian elimination to find c
+run('Gaussian_Elimination_Example.m')
+
+c_ans=[0;c_ans];
+c_ans(13)=0;
+
+%loop to find d
+d=zeros(12,1);
+for k=1:12
+   h_k=(x(k+1)-x(k)); 
+   d(k)=(c_ans(k+1)-c_ans(k))/(3*h_k); 
+end
+
+%loop to find b
+b=zeros(12,1);
+for l=1:12
+b(l)=((y(l+1)-y(l))/(x(l+1)-x(l)))-...
+	((2/3)*c_ans(l)*(x(l+1)-x(l)))-...
+	((1/3)*c_ans(l+1)*(x(l+1)-x(l)));
+end
+%build and plot Si
+figure;
+hold on;
+ytotal=0;
+for t = 1:12
+   f =  @(q) y(t)+b(t).*(q-x(t))+...
+   	c_ans(t).*(q-x(t)).^2+d(t)*(q-x(t)).^3;
+   q0=linspace(x(t),x(t+1));
+   y0= f(q0);
+   plot(q0,y0,'r')
+   ytotal=[ytotal,y0];
+end
+ytotal(1)=[];
+axis equal 
+plot(x,y,'bo')
+hold off
+
+%use MATLAB's spline function to compare
+xx = linspace(x(1),x(13),1200);
+
+yy = spline(x,y,xx);
+
+figure;
+plot(x,y,'x',xx,yy,'b')
+axis equal
+
+figure;
+plot(x,y,'x',xx,yy,'b',q0,y0,'r')
+axis equal
+
+%find error
+difference = ytotal-yy;
+error=sum(difference)/1200;
+\end{lstlisting}
 
 \end{document}
