@@ -57,12 +57,11 @@ When a line can only be described by a series of points on it, it is often usefu
 
 The points used to test the spline approximation method describe the roof of the car in the graphic below. At the end of the project, the authors will also be comparing the line obtained with both methods of interpolation with the image of the car to test the accuracy of the approximation.
 
-\begin{center}
-	\begin{figure}
+\begin{figure}
+	\centering	
 		\includegraphics[scale=0.5]{Car.png}
 		\caption{The car whose roof is described by the given points}
-	\end{figure}
-\end{center}
+\end{figure}
 
 The points that describe the car's roof are in the following table.
 
@@ -231,19 +230,17 @@ Once all of the coefficients had been solved for, a final for loop was used in c
 \section{Results and Discussion}
 The MATLAB implementation of the Spline Approximation created by the team proved to very closely approximate the roof of the car in the picture. Two graphics are shown below, of the result of MATLAB's own implementation of the spline approximation of the car, as well as the same image with the result of the team's implementation of the spline approximation overlayed.
 
-\begin{center}
-	\begin{figure}[H]
+\begin{figure}[H]
+	\centering
 		\includegraphics[scale=0.5]{car_with_matlab_spline.png}
 		\caption{An image of the car with the result of MATLAB's implementation of the spline approximation overlayed}
-	\end{figure}
-\end{center}
+\end{figure}
 
-\begin{center}
-	\begin{figure}[H]
+\begin{figure}[H]
+	\centering
 		\includegraphics[scale=0.5]{car_with_both_splines.png}
 		\caption{An image of the car with the result of the team's implementation of the spline approximation overlayed. The team's implementation is in red.}
-	\end{figure}
-\end{center}
+\end{figure}
 
 The only difference between the team's implementation of the spline approximation was between points 12 and 13, where MATLAB used a different set of end point conditions to create its spline than were used by the team.
 
